@@ -30,6 +30,18 @@ export default function Home() {
     setShowForm(true);
   };
 
+  //NOTE - Delete the product
+  const deleteProduct = (id) => {
+    axios
+      .delete(`${import.meta.env.VITE_API_URL}/product/${id}`)
+      .then((res) => {
+        fetchProducts();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   // NOTE - useEffect is used to fetch the products when the page loads
   useEffect(() => {
     fetchProducts();
@@ -78,7 +90,12 @@ export default function Home() {
                     <RiEditBoxLine />
                     <span>Edit</span>
                   </div>
-                  <div className="text-white z-10 flex gap-2 justify-center cursor-pointer hover:opacity-70">
+                  <div
+                    onClick={() => {
+                      deleteProduct(product.id);
+                    }}
+                    className="text-white z-10 flex gap-2 justify-center cursor-pointer hover:opacity-70"
+                  >
                     <RiDeleteBin2Fill />
                     <span>Delete</span>
                   </div>
