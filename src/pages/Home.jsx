@@ -1,9 +1,11 @@
 import { FaPlus } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ModalForm from "../components/Product/ModalForm";
 export default function Home() {
   const [products, setProducts] = useState([]);
-  useEffect(() => {
+  const [showForm, setShowForm] = useState(false);
+  const fetchProducts = () => {
     axios
       .get(`${import.meta.env.VITE_API_URL}/product`)
       .then((res) => {
@@ -12,23 +14,32 @@ export default function Home() {
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  useEffect(() => {
+    fetchProducts();
   }, []);
   return (
     <div className="bg-white">
+      <ModalForm
+        showForm={showForm}
+        setShowForm={setShowForm}
+        fetchProducts={fetchProducts}
+      />
       <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
         <div className="md:flex md:items-center md:justify-between">
           <h2 className="text-2xl font-bold tracking-tight text-gray-900">
             Trending products
           </h2>
-          <a
-            href="#"
-            className="hidden text-md font-medium text-indigo-600 hover:text-indigo-500 md:flex items-center gap-2"
+          <div
+            onClick={() => setShowForm(true)}
+            className="hidden text-md font-medium text-indigo-600 hover:text-indigo-500 md:flex items-center gap-2 cursor-pointer"
           >
             Add new product
             <span aria-hidden="true">
               <FaPlus />
             </span>
-          </a>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-4 md:gap-y-0 lg:gap-x-8">
@@ -60,15 +71,15 @@ export default function Home() {
         </div>
 
         <div className="mt-8 text-sm md:hidden">
-          <a
-            href="#"
-            className="font-medium text-indigo-600 hover:text-indigo-500 flex items-center gap-2"
+          <div
+            onClick={() => setShowForm(true)}
+            className="font-medium text-indigo-600 hover:text-indigo-500 flex items-center gap-2 cursor-pointer"
           >
             Add new product
             <span aria-hidden="true">
               <FaPlus />
             </span>
-          </a>
+          </div>
         </div>
       </div>
     </div>
