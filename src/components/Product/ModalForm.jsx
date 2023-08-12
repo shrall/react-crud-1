@@ -1,10 +1,16 @@
 import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useRef, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import axios from "axios";
 
-export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
+export default function ModalForm({
+  showForm,
+  setShowForm,
+  fetchProducts,
+  selectedProduct,
+  setSelectedProduct,
+}) {
   const cancelButtonRef = useRef(null);
   const [product, setProduct] = useState({
     name: "",
@@ -13,6 +19,13 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
     price: "",
     image: "",
   });
+  // NOTE - Set product data to selectedProduct for editing
+  useEffect(() => {
+    if (selectedProduct) {
+      setProduct(selectedProduct);
+    }
+  }, [selectedProduct]);
+  // NOTE - Handle form input change based on input name then its value
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProduct((prevData) => ({
@@ -20,12 +33,14 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
       [name]: value,
     }));
   };
+  // NOTE - Separate image change handler because it's a file
   const handleImageChange = (e) => {
     setProduct((prevData) => ({
       ...prevData,
       image: e.target.files[0],
     }));
   };
+  //SECTION - Drag and drop image handler
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const handleDragOver = (e) => {
@@ -46,6 +61,8 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
       }));
     }
   };
+  //!SECTION - End of drag and drop image handler
+  //NOTE - Form submit handler
   const handleSubmit = (e) => {
     e.preventDefault();
     const productData = new FormData();
@@ -54,16 +71,35 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
     productData.append("type", product.type);
     productData.append("price", product.price);
     productData.append("image", product.image);
-    axios
-      .post(`${import.meta.env.VITE_API_URL}/product`, productData)
-      .then((res) => {
-        fetchProducts();
-        setShowForm(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+
+    if (selectedProduct) {
+      //NOTE - Edit product
+      axios
+        .put(
+          `${import.meta.env.VITE_API_URL}/product/${selectedProduct.id}`,
+          productData
+        )
+        .then((res) => {
+          fetchProducts();
+          handleCloseForm();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      //NOTE - Add new product
+      axios
+        .post(`${import.meta.env.VITE_API_URL}/product`, productData)
+        .then((res) => {
+          fetchProducts();
+          handleCloseForm();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   };
+  //NOTE - Reset product data if form is closed
   const resetProductData = () => {
     setProduct({
       name: "",
@@ -73,8 +109,10 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
       image: "",
     });
   };
+  // NOTE - Close form handler
   const handleCloseForm = () => {
     resetProductData();
+    setSelectedProduct(null);
     setShowForm(false);
   };
   return (
@@ -117,7 +155,7 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
                     <div>
                       <div>
                         <h3 className="text-lg font-medium leading-6 text-gray-900">
-                          Add new product
+                          {selectedProduct ? "Edit product" : "Add new product"}
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
                           Please make sure all information is correct before
@@ -218,11 +256,19 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
                           </label>
                           {product.image ? (
                             <div className="h-56 overflow-hidden rounded-md bg-gray-200 group-hover:opacity-75 lg:h-72 xl:h-80 relative group">
-                              <img
-                                src={URL.createObjectURL(product.image)}
-                                alt={`image of ${product.name}}`}
-                                className="h-full object-cover object-center mx-auto"
-                              />
+                              {selectedProduct ? (
+                                <img
+                                  src={`data:${product.image.contentType};base64,${product.image.data}`}
+                                  alt={`image of ${product.name}}`}
+                                  className="h-full object-cover object-center mx-auto"
+                                />
+                              ) : (
+                                <img
+                                  src={URL.createObjectURL(product.image)}
+                                  alt={`image of ${product.name}}`}
+                                  className="h-full object-cover object-center mx-auto"
+                                />
+                              )}
                               <div className="absolute bg-black opacity-0 group-hover:opacity-80 w-full h-full top-0 flex items-center justify-center transition-all cursor-pointer p-4">
                                 <div
                                   className={`mt-1 w-full h-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pt-5 pb-6 opacity-0 group-hover:opacity-100 ${
@@ -309,7 +355,7 @@ export default function ModalForm({ showForm, setShowForm, fetchProducts }) {
                         type="submit"
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        Save
+                        {selectedProduct ? "Update" : "Save"}
                       </button>
                     </div>
                   </div>
