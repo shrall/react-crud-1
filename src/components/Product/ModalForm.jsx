@@ -256,7 +256,7 @@ export default function ModalForm({
                           </label>
                           {product.image ? (
                             <div className="h-56 overflow-hidden rounded-md bg-gray-200 group-hover:opacity-75 lg:h-72 xl:h-80 relative group">
-                              {selectedProduct ? (
+                              {selectedProduct && product.image.data ? (
                                 <img
                                   src={`data:${product.image.contentType};base64,${product.image.data}`}
                                   alt={`image of ${product.name}}`}
