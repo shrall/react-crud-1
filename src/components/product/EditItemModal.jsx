@@ -1,3 +1,4 @@
+import { FaCircleNotch } from "react-icons/fa";
 import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useRef, useState, useEffect } from "react";
@@ -11,6 +12,7 @@ export default function EditItemModal({
   selectedProduct,
 }) {
   const cancelButtonRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -64,6 +66,7 @@ export default function EditItemModal({
   //NOTE - Form submit handler
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsLoading(true);
     const productData = new FormData();
     productData.append("name", product.name);
     productData.append("description", product.description);
@@ -74,6 +77,7 @@ export default function EditItemModal({
       .put(`/product/${selectedProduct.id}`, productData)
       .then((res) => {
         onSuccess();
+        setIsLoading(false);
         handleCloseForm();
       })
       .catch((err) => {
@@ -321,10 +325,15 @@ export default function EditItemModal({
                         Cancel
                       </button>
                       <button
+                        disabled={isLoading}
                         type="submit"
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        Update
+                        {isLoading ? (
+                          <FaCircleNotch className="animate-spin" />
+                        ) : (
+                          <span>Update</span>
+                        )}
                       </button>
                     </div>
                   </div>
