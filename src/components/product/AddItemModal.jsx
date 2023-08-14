@@ -1,17 +1,14 @@
+import { FaCircleNotch } from "react-icons/fa";
 import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useRef, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import axios from "axios";
+import { serialize } from 'object-to-formdata';
+import api from "../../service/api.js";
 
-export default function ModalForm({
-  showForm,
-  setShowForm,
-  fetchProducts,
-  selectedProduct,
-  setSelectedProduct,
-}) {
+export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
   const cancelButtonRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -19,12 +16,6 @@ export default function ModalForm({
     price: "",
     image: "",
   });
-  // NOTE - Set product data to selectedProduct for editing
-  useEffect(() => {
-    if (selectedProduct) {
-      setProduct(selectedProduct);
-    }
-  }, [selectedProduct]);
   // NOTE - Handle form input change based on input name then its value
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,39 +56,19 @@ export default function ModalForm({
   //NOTE - Form submit handler
   const handleSubmit = (e) => {
     e.preventDefault();
-    const productData = new FormData();
-    productData.append("name", product.name);
-    productData.append("description", product.description);
-    productData.append("type", product.type);
-    productData.append("price", product.price);
-    productData.append("image", product.image);
-
-    if (selectedProduct) {
-      //NOTE - Edit product
-      axios
-        .put(
-          `${import.meta.env.VITE_API_URL}/product/${selectedProduct.id}`,
-          productData
-        )
-        .then((res) => {
-          fetchProducts();
-          handleCloseForm();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } else {
-      //NOTE - Add new product
-      axios
-        .post(`${import.meta.env.VITE_API_URL}/product`, productData)
-        .then((res) => {
-          fetchProducts();
-          handleCloseForm();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
+    setIsLoading(true);
+    const productData = serialize(product);
+    //NOTE - Add new product
+    api
+      .post(`/product`, productData)
+      .then((res) => {
+        onSuccess();
+        setIsLoading(false);
+        handleCloseModal();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
   //NOTE - Reset product data if form is closed
   const resetProductData = () => {
@@ -110,18 +81,17 @@ export default function ModalForm({
     });
   };
   // NOTE - Close form handler
-  const handleCloseForm = () => {
+  const handleCloseModal = () => {
     resetProductData();
-    setSelectedProduct(null);
-    setShowForm(false);
+    setShowModal(false);
   };
   return (
-    <Transition.Root show={showForm} as={Fragment}>
+    <Transition.Root show={showModal} as={Fragment}>
       <Dialog
         as="div"
         className="relative z-10"
         initialFocus={cancelButtonRef}
-        onClose={handleCloseForm}
+        onClose={handleCloseModal}
       >
         <Transition.Child
           as={Fragment}
@@ -155,7 +125,7 @@ export default function ModalForm({
                     <div>
                       <div>
                         <h3 className="text-lg font-medium leading-6 text-gray-900">
-                          {selectedProduct ? "Edit product" : "Add new product"}
+                          Add new product
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
                           Please make sure all information is correct before
@@ -256,19 +226,11 @@ export default function ModalForm({
                           </label>
                           {product.image ? (
                             <div className="h-56 overflow-hidden rounded-md bg-gray-200 group-hover:opacity-75 lg:h-72 xl:h-80 relative group">
-                              {selectedProduct && product.image.data ? (
-                                <img
-                                  src={`data:${product.image.contentType};base64,${product.image.data}`}
-                                  alt={`image of ${product.name}}`}
-                                  className="h-full object-cover object-center mx-auto"
-                                />
-                              ) : (
-                                <img
-                                  src={URL.createObjectURL(product.image)}
-                                  alt={`image of ${product.name}}`}
-                                  className="h-full object-cover object-center mx-auto"
-                                />
-                              )}
+                              <img
+                                src={URL.createObjectURL(product.image)}
+                                alt={`image of ${product.name}}`}
+                                className="h-full object-cover object-center mx-auto"
+                              />
                               <div className="absolute bg-black opacity-0 group-hover:opacity-80 w-full h-full top-0 flex items-center justify-center transition-all cursor-pointer p-4">
                                 <div
                                   className={`mt-1 w-full h-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pt-5 pb-6 opacity-0 group-hover:opacity-100 ${
@@ -345,17 +307,22 @@ export default function ModalForm({
                   <div className="pt-5">
                     <div className="flex justify-end">
                       <button
-                        onClick={handleCloseForm}
+                        onClick={handleCloseModal}
                         type="button"
                         className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
                         Cancel
                       </button>
                       <button
+                        disabled={isLoading}
                         type="submit"
-                        className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        {selectedProduct ? "Update" : "Save"}
+                        {isLoading ? (
+                          <FaCircleNotch className="animate-spin" />
+                        ) : (
+                          <span>Save</span>
+                        )}
                       </button>
                     </div>
                   </div>

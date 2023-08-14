@@ -2,20 +2,23 @@ import { RiDeleteBin2Fill } from "react-icons/ri";
 import { RiEditBoxLine } from "react-icons/ri";
 import { FaPlus } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import ModalForm from "../components/Product/ModalForm";
+import api from "../service/api.js";
+import AddItemModal from "../components/product/AddItemModal.jsx";
+import EditItemModal from "../components/product/EditItemModal.jsx";
+
 export default function Home() {
   // NOTE - products is used to store the products from the API
   const [products, setProducts] = useState([]);
-  // NOTE - showForm is used to show/hide the form
-  const [showForm, setShowForm] = useState(false);
+  // NOTE - this is used to show/hide the form
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   // NOTE - selectedProduct is used to pass the product to the form
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   // NOTE - fetchProducts is used to fetch the products from the API
   const fetchProducts = () => {
-    axios
-      .get(`${import.meta.env.VITE_API_URL}/product`)
+    api
+      .get(`/product`)
       .then((res) => {
         setProducts(res.data);
       })
@@ -27,13 +30,13 @@ export default function Home() {
   // NOTE - Open the form with the selected product
   const openEditForm = (product) => {
     setSelectedProduct(product);
-    setShowForm(true);
+    setShowEditModal(true);
   };
 
   //NOTE - Delete the product
   const deleteProduct = (id) => {
-    axios
-      .delete(`${import.meta.env.VITE_API_URL}/product/${id}`)
+    api
+      .delete(`/product/${id}`)
       .then((res) => {
         fetchProducts();
       })
@@ -48,12 +51,20 @@ export default function Home() {
   }, []);
   return (
     <div className="bg-white">
-      <ModalForm
-        showForm={showForm}
-        setShowForm={setShowForm}
-        fetchProducts={fetchProducts}
+      <AddItemModal
+        showModal={showAddModal}
+        setShowModal={setShowAddModal}
+        onSuccess={() => {
+          fetchProducts();
+        }}
+      />
+      <EditItemModal
+        showModal={showEditModal}
+        setShowModal={setShowEditModal}
+        onSuccess={() => {
+          fetchProducts();
+        }}
         selectedProduct={selectedProduct}
-        setSelectedProduct={setSelectedProduct}
       />
       <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
         <div className="md:flex md:items-center md:justify-between">
@@ -61,7 +72,7 @@ export default function Home() {
             Trending products
           </h2>
           <div
-            onClick={() => setShowForm(true)}
+            onClick={() => setShowAddModal(true)}
             className="hidden text-md font-medium text-indigo-600 hover:text-indigo-500 md:flex items-center gap-2 cursor-pointer"
           >
             Add new product
@@ -76,7 +87,10 @@ export default function Home() {
             <div key={product.id} className="group relative">
               <div className="h-56 w-full overflow-hidden rounded-md bg-gray-200 lg:h-72 xl:h-80 relative group">
                 <img
-                  src={`data:${product.image.contentType};base64,${product.image.data}`}
+                  src={
+                    product.image &&
+                    `data:${product.image.contentType};base64,${product.image.data}`
+                  }
                   alt={`image of ${product.name}}`}
                   className="h-full w-full object-cover object-center"
                 />
@@ -121,7 +135,7 @@ export default function Home() {
         </div>
         <div className="mt-8 text-sm md:hidden">
           <div
-            onClick={() => setShowForm(true)}
+            onClick={() => setShowAddModal(true)}
             className="font-medium text-indigo-600 hover:text-indigo-500 flex items-center gap-2 cursor-pointer"
           >
             Add new product
