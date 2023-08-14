@@ -87,7 +87,10 @@ export default function Home() {
             <div key={product.id} className="group relative">
               <div className="h-56 w-full overflow-hidden rounded-md bg-gray-200 lg:h-72 xl:h-80 relative group">
                 <img
-                  src={`data:${product.image.contentType};base64,${product.image.data}`}
+                  src={
+                    product.image &&
+                    `data:${product.image.contentType};base64,${product.image.data}`
+                  }
                   alt={`image of ${product.name}}`}
                   className="h-full w-full object-cover object-center"
                 />
