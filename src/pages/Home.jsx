@@ -2,7 +2,7 @@ import { RiDeleteBin2Fill } from "react-icons/ri";
 import { RiEditBoxLine } from "react-icons/ri";
 import { FaPlus } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../service/api.js";
 import ModalForm from "../components/Product/ModalForm";
 export default function Home() {
   // NOTE - products is used to store the products from the API
@@ -14,8 +14,8 @@ export default function Home() {
 
   // NOTE - fetchProducts is used to fetch the products from the API
   const fetchProducts = () => {
-    axios
-      .get(`${import.meta.env.VITE_API_URL}/product`)
+    api
+      .get(`/product`)
       .then((res) => {
         setProducts(res.data);
       })
@@ -32,8 +32,8 @@ export default function Home() {
 
   //NOTE - Delete the product
   const deleteProduct = (id) => {
-    axios
-      .delete(`${import.meta.env.VITE_API_URL}/product/${id}`)
+    api
+      .delete(`/product/${id}`)
       .then((res) => {
         fetchProducts();
       })

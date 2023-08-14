@@ -2,7 +2,7 @@ import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useRef, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import axios from "axios";
+import api from "../../service/api.js";
 
 export default function ModalForm({
   showForm,
@@ -74,11 +74,8 @@ export default function ModalForm({
 
     if (selectedProduct) {
       //NOTE - Edit product
-      axios
-        .put(
-          `${import.meta.env.VITE_API_URL}/product/${selectedProduct.id}`,
-          productData
-        )
+      api
+        .put(`/product/${selectedProduct.id}`, productData)
         .then((res) => {
           fetchProducts();
           handleCloseForm();
@@ -88,8 +85,8 @@ export default function ModalForm({
         });
     } else {
       //NOTE - Add new product
-      axios
-        .post(`${import.meta.env.VITE_API_URL}/product`, productData)
+      api
+        .post(`/product`, productData)
         .then((res) => {
           fetchProducts();
           handleCloseForm();
