@@ -3,6 +3,7 @@ import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useRef, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import { serialize } from 'object-to-formdata';
 import api from "../../service/api.js";
 
 export default function EditItemModal({
@@ -67,12 +68,7 @@ export default function EditItemModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const productData = new FormData();
-    productData.append("name", product.name);
-    productData.append("description", product.description);
-    productData.append("type", product.type);
-    productData.append("price", product.price);
-    productData.append("image", product.image);
+    const productData = serialize(product);
     api
       .put(`/product/${selectedProduct.id}`, productData)
       .then((res) => {
