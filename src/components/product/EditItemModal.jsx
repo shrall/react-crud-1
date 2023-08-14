@@ -4,12 +4,11 @@ import { Fragment, useRef, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import api from "../../service/api.js";
 
-export default function ModalForm({
-  showForm,
-  setShowForm,
-  fetchProducts,
+export default function EditItemModal({
+  showModal,
+  setShowModal,
+  onSuccess,
   selectedProduct,
-  setSelectedProduct,
 }) {
   const cancelButtonRef = useRef(null);
   const [product, setProduct] = useState({
@@ -71,49 +70,22 @@ export default function ModalForm({
     productData.append("type", product.type);
     productData.append("price", product.price);
     productData.append("image", product.image);
-
-    if (selectedProduct) {
-      //NOTE - Edit product
-      api
-        .put(`/product/${selectedProduct.id}`, productData)
-        .then((res) => {
-          fetchProducts();
-          handleCloseForm();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } else {
-      //NOTE - Add new product
-      api
-        .post(`/product`, productData)
-        .then((res) => {
-          fetchProducts();
-          handleCloseForm();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-  };
-  //NOTE - Reset product data if form is closed
-  const resetProductData = () => {
-    setProduct({
-      name: "",
-      description: "",
-      type: "Clothing",
-      price: "",
-      image: "",
-    });
+    api
+      .put(`/product/${selectedProduct.id}`, productData)
+      .then((res) => {
+        onSuccess();
+        handleCloseForm();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
   // NOTE - Close form handler
   const handleCloseForm = () => {
-    resetProductData();
-    setSelectedProduct(null);
-    setShowForm(false);
+    setShowModal(false);
   };
   return (
-    <Transition.Root show={showForm} as={Fragment}>
+    <Transition.Root show={showModal} as={Fragment}>
       <Dialog
         as="div"
         className="relative z-10"
@@ -152,7 +124,7 @@ export default function ModalForm({
                     <div>
                       <div>
                         <h3 className="text-lg font-medium leading-6 text-gray-900">
-                          {selectedProduct ? "Edit product" : "Add new product"}
+                          Edit product
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
                           Please make sure all information is correct before
@@ -352,7 +324,7 @@ export default function ModalForm({
                         type="submit"
                         className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        {selectedProduct ? "Update" : "Save"}
+                        Update
                       </button>
                     </div>
                   </div>
