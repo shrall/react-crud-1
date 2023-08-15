@@ -4,6 +4,7 @@ import api from "../service/api.js";
 import AddItemModal from "../components/product/AddItemModal.jsx";
 import EditItemModal from "../components/product/EditItemModal.jsx";
 import ProductCard from "../components/product/ProductCard.jsx";
+import { Toaster, toast } from "sonner";
 
 export default function Home() {
   // NOTE - products is used to store the products from the API
@@ -34,14 +35,19 @@ export default function Home() {
 
   //NOTE - Delete the product
   const deleteProduct = (id) => {
-    api
-      .delete(`/product/${id}`)
-      .then((res) => {
-        fetchProducts();
-      })
-      .catch((err) => {
-        console.log(err);
+    try {
+      toast.promise(api.delete(`/product/${id}`), {
+        loading: "Loading..",
+        success: (data) => {
+          fetchProducts();
+          return "Successfully deleted product";
+        },
+        error: "Failed to delete product",
       });
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to delete product");
+    }
   };
 
   // NOTE - useEffect is used to fetch the products when the page loads
@@ -50,6 +56,7 @@ export default function Home() {
   }, []);
   return (
     <div className="bg-white">
+      <Toaster richColors position="top-center" />
       <AddItemModal
         showModal={showAddModal}
         setShowModal={setShowAddModal}
