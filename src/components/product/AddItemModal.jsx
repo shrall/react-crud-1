@@ -3,11 +3,11 @@ import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useRef, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { serialize } from 'object-to-formdata';
+import { serialize } from "object-to-formdata";
+import { toast } from "sonner";
 import api from "../../service/api.js";
 
 export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
-  const cancelButtonRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState({
     name: "",
@@ -58,17 +58,21 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
     e.preventDefault();
     setIsLoading(true);
     const productData = serialize(product);
-    //NOTE - Add new product
-    api
-      .post(`/product`, productData)
-      .then((res) => {
-        onSuccess();
-        setIsLoading(false);
-        handleCloseModal();
-      })
-      .catch((err) => {
-        console.log(err);
+    try {
+      toast.promise(api.post(`/product`, productData), {
+        loading: "Loading...",
+        success: (data) => {
+          onSuccess();
+          setIsLoading(false);
+          handleCloseModal();
+          return `${data.data.name} has been created!`;
+        },
+        error: "Error",
       });
+    } catch (err) {
+      console.log(err);
+      setIsLoading(false);
+    }
   };
   //NOTE - Reset product data if form is closed
   const resetProductData = () => {
@@ -87,12 +91,7 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
   };
   return (
     <Transition.Root show={showModal} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-10"
-        initialFocus={cancelButtonRef}
-        onClose={handleCloseModal}
-      >
+      <Dialog as="div" className="relative z-10" onClose={handleCloseModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"

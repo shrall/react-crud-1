@@ -3,7 +3,8 @@ import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useRef, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { serialize } from 'object-to-formdata';
+import { serialize } from "object-to-formdata";
+import { toast } from "sonner";
 import api from "../../service/api.js";
 
 export default function EditItemModal({
@@ -69,16 +70,21 @@ export default function EditItemModal({
     e.preventDefault();
     setIsLoading(true);
     const productData = serialize(product);
-    api
-      .put(`/product/${selectedProduct.id}`, productData)
-      .then((res) => {
-        onSuccess();
-        setIsLoading(false);
-        handleCloseForm();
-      })
-      .catch((err) => {
-        console.log(err);
+    try {
+      toast.promise(api.put(`/product/${selectedProduct.id}`, productData), {
+        loading: "Loading..",
+        success: (data) => {
+          onSuccess();
+          setIsLoading(false);
+          handleCloseForm();
+          return "Successfully updated product";
+        },
+        error: "Failed to update product",
       });
+    } catch {
+      toast.error("Failed to update product");
+      setIsLoading(false);
+    }
   };
   // NOTE - Close form handler
   const handleCloseForm = () => {
