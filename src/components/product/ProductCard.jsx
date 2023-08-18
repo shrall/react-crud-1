@@ -1,7 +1,9 @@
+import { FaEye } from "react-icons/fa";
 import { RiDeleteBin2Fill } from "react-icons/ri";
 import { RiEditBoxLine } from "react-icons/ri";
+import { Link } from "react-router-dom";
 
-function ProductCard({product, openEditForm, deleteProduct}) {
+function ProductCard({ product, openEditForm, deleteProduct }) {
   return (
     <div className="group relative">
       <div className="h-56 w-full overflow-hidden rounded-md bg-gray-200 lg:h-72 xl:h-80 relative group">
@@ -14,6 +16,13 @@ function ProductCard({product, openEditForm, deleteProduct}) {
           className="h-full w-full object-cover object-center"
         />
         <div className="absolute h-full w-full top-0 flex flex-col gap-2 items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+          <Link
+            to={`/product/${product.id}`}
+            className="text-white z-10 flex gap-2 justify-center cursor-pointer hover:opacity-70"
+          >
+            <FaEye />
+            <span>Quick View</span>
+          </Link>
           <div
             onClick={() => {
               openEditForm(product);
