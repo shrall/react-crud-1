@@ -70,21 +70,20 @@ export default function EditItemModal({
     e.preventDefault();
     setIsLoading(true);
     const productData = serialize(product);
-    try {
-      toast.promise(api.put(`/product/${selectedProduct.id}`, productData), {
-        loading: "Loading..",
-        success: (data) => {
-          onSuccess();
-          setIsLoading(false);
-          handleCloseForm();
-          return "Successfully updated product";
-        },
-        error: "Failed to update product",
-      });
-    } catch {
-      toast.error("Failed to update product");
-      setIsLoading(false);
-    }
+    toast.promise(api.put(`/product/${selectedProduct.id}`, productData), {
+      loading: "Loading..",
+      success: (data) => {
+        onSuccess();
+        setIsLoading(false);
+        handleCloseForm();
+        return "Successfully updated product";
+      },
+      error: (err) => {
+        console.log(err);
+        setIsLoading(false);
+        return `Failed to update product | ${err}`;
+      },
+    });
   };
   // NOTE - Close form handler
   const handleCloseForm = () => {

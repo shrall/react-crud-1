@@ -35,19 +35,18 @@ export default function Home() {
 
   //NOTE - Delete the product
   const deleteProduct = (id) => {
-    try {
-      toast.promise(api.delete(`/product/${id}`), {
-        loading: "Loading..",
-        success: (data) => {
-          fetchProducts();
-          return "Successfully deleted product";
-        },
-        error: "Failed to delete product",
-      });
-    } catch (err) {
-      console.log(err);
-      toast.error("Failed to delete product");
-    }
+    toast.promise(api.delete(`/product/${id}`), {
+      loading: "Loading..",
+      success: (data) => {
+        fetchProducts();
+        return "Successfully deleted product";
+      },
+      error: (err) => {
+        console.log(err);
+        setIsLoading(false);
+        return `Failed to delete product | ${err}`;
+      },
+    });
   };
 
   // NOTE - useEffect is used to fetch the products when the page loads
