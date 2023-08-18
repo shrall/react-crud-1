@@ -1,6 +1,6 @@
 import { FaPlus } from "react-icons/fa";
 import { useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import api from "../service/api.js";
 import AddItemModal from "../components/product/AddItemModal.jsx";
 import EditItemModal from "../components/product/EditItemModal.jsx";
@@ -19,8 +19,9 @@ export default function Home() {
     data: products,
     isLoading,
     refetch,
-  } = useQuery("products", () => {
-    return api.get("/product").then((res) => res.data);
+  } = useQuery(["products"], {
+    queryFn: () => api.get("/product"),
+    select: (data) => data.data,
   });
 
   if (isLoading) {
@@ -47,7 +48,6 @@ export default function Home() {
       },
       error: (err) => {
         console.log(err);
-        setIsLoading(false);
         return `Failed to delete product | ${err}`;
       },
     });
