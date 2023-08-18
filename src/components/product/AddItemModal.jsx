@@ -58,21 +58,20 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
     e.preventDefault();
     setIsLoading(true);
     const productData = serialize(product);
-    try {
-      toast.promise(api.post(`/product`, productData), {
-        loading: "Loading...",
-        success: (data) => {
-          onSuccess();
-          setIsLoading(false);
-          handleCloseModal();
-          return `${data.data.name} has been created!`;
-        },
-        error: "Error",
-      });
-    } catch (err) {
-      console.log(err);
-      setIsLoading(false);
-    }
+    toast.promise(api.post(`/product`, productData), {
+      loading: "Loading...",
+      success: (data) => {
+        onSuccess();
+        setIsLoading(false);
+        handleCloseModal();
+        return `${data.data.name} has been created!`;
+      },
+      error: (err) => {
+        console.log(err);
+        setIsLoading(false);
+        return `Failed to add new product | ${err}`;
+      },
+    });
   };
   //NOTE - Reset product data if form is closed
   const resetProductData = () => {
