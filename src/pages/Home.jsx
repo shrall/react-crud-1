@@ -1,5 +1,6 @@
 import { FaPlus } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "react-query";
 import api from "../service/api.js";
 import AddItemModal from "../components/product/AddItemModal.jsx";
 import EditItemModal from "../components/product/EditItemModal.jsx";
@@ -7,25 +8,28 @@ import ProductCard from "../components/product/ProductCard.jsx";
 import { toast } from "sonner";
 
 export default function Home() {
-  // NOTE - products is used to store the products from the API
-  const [products, setProducts] = useState([]);
   // NOTE - this is used to show/hide the form
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   // NOTE - selectedProduct is used to pass the product to the form
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // NOTE - fetchProducts is used to fetch the products from the API
-  const fetchProducts = () => {
-    api
-      .get(`/product`)
-      .then((res) => {
-        setProducts(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+  // NOTE - Fetch all products using react-query
+  const {
+    data: products,
+    isLoading,
+    refetch,
+  } = useQuery("products", () => {
+    return api.get("/product").then((res) => res.data);
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <div className="text-5xl">Loading...</div>
+      </div>
+    );
+  }
 
   // NOTE - Open the form with the selected product
   const openEditForm = (product) => {
@@ -38,7 +42,7 @@ export default function Home() {
     toast.promise(api.delete(`/product/${id}`), {
       loading: "Loading..",
       success: (data) => {
-        fetchProducts();
+        refetch();
         return "Successfully deleted product";
       },
       error: (err) => {
@@ -48,25 +52,20 @@ export default function Home() {
       },
     });
   };
-
-  // NOTE - useEffect is used to fetch the products when the page loads
-  useEffect(() => {
-    fetchProducts();
-  }, []);
   return (
     <div className="bg-white">
       <AddItemModal
         showModal={showAddModal}
         setShowModal={setShowAddModal}
         onSuccess={() => {
-          fetchProducts();
+          refetch();
         }}
       />
       <EditItemModal
         showModal={showEditModal}
         setShowModal={setShowEditModal}
         onSuccess={() => {
-          fetchProducts();
+          refetch();
         }}
         selectedProduct={selectedProduct}
       />
