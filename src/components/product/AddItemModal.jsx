@@ -227,7 +227,7 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
                             <div className="h-56 overflow-hidden rounded-md bg-gray-200 group-hover:opacity-75 lg:h-72 xl:h-80 relative group">
                               <img
                                 src={URL.createObjectURL(product.image)}
-                                alt={`image of ${product.name}}`}
+                                alt={`image of ${product.name}`}
                                 className="h-full object-cover object-center mx-auto"
                               />
                               <div className="absolute bg-black opacity-0 group-hover:opacity-80 w-full h-full top-0 flex items-center justify-center transition-all cursor-pointer p-4">

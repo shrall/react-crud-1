@@ -1,10 +1,10 @@
 import { FaPlus } from "react-icons/fa";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import api from "../service/api.js";
 import AddItemModal from "../components/product/AddItemModal.jsx";
 import EditItemModal from "../components/product/EditItemModal.jsx";
 import ProductCard from "../components/product/ProductCard.jsx";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 
 export default function Home() {
   // NOTE - products is used to store the products from the API
@@ -56,7 +56,6 @@ export default function Home() {
   }, []);
   return (
     <div className="bg-white">
-      <Toaster richColors position="top-center" />
       <AddItemModal
         showModal={showAddModal}
         setShowModal={setShowAddModal}

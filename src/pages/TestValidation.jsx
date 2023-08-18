@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 function TestValidation() {
   const [product, setProduct] = useState({
