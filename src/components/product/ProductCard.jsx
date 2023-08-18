@@ -10,7 +10,7 @@ function ProductCard({product, openEditForm, deleteProduct}) {
             product.image &&
             `data:${product.image.contentType};base64,${product.image.data}`
           }
-          alt={`image of ${product.name}}`}
+          alt={`image of ${product.name}`}
           className="h-full w-full object-cover object-center"
         />
         <div className="absolute h-full w-full top-0 flex flex-col gap-2 items-center justify-center opacity-0 group-hover:opacity-100 transition-all">

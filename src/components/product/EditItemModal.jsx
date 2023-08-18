@@ -234,13 +234,13 @@ export default function EditItemModal({
                               {selectedProduct && product.image.data ? (
                                 <img
                                   src={`data:${product.image.contentType};base64,${product.image.data}`}
-                                  alt={`image of ${product.name}}`}
+                                  alt={`image of ${product.name}`}
                                   className="h-full object-cover object-center mx-auto"
                                 />
                               ) : (
                                 <img
                                   src={URL.createObjectURL(product.image)}
-                                  alt={`image of ${product.name}}`}
+                                  alt={`image of ${product.name}`}
                                   className="h-full object-cover object-center mx-auto"
                                 />
                               )}
