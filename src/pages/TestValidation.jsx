@@ -1,45 +1,20 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 function TestValidation() {
-  const [product, setProduct] = useState({
-    name: "",
-    price: "",
-  });
-  const [errors, setErrors] = useState({
-    name: "",
-    price: "",
-  });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProduct((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newErrors = {};
-    if (product.name === "") {
-      newErrors.name = "Name cannot be empty";
-    }
-    if (isNaN(product.price) || product.price === "") {
-      newErrors.price = "Price must be a valid number";
-    }
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      console.log("Product data is valid and can be saved:", product);
-    }
+  const onSubmit = (data) => {
+    console.log("Product data is valid and can be saved:", data);
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       className="space-y-8 divide-y divide-gray-200 max-w-lg mx-auto"
     >
       <div className="sm:col-span-6">
@@ -52,17 +27,15 @@ function TestValidation() {
         <div className="mt-1">
           <input
             type="text"
-            name="name"
             id="name"
             autoComplete="name"
-            onChange={handleChange}
-            value={product.name}
+            {...register("name", { required: "Name cannot be empty" })}
             className={`block w-full rounded-md border ${
               errors.name ? "border-red-500" : "border-gray-300"
             } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
           />
           {errors.name && (
-            <p className="mt-2 text-sm text-red-500">{errors.name}</p>
+            <p className="mt-2 text-sm text-red-500">{errors.name.message}</p>
           )}
         </div>
       </div>
@@ -75,18 +48,23 @@ function TestValidation() {
         </label>
         <div className="mt-1">
           <input
-            type="text"
-            name="price"
+            type="number"
             id="price"
             autoComplete="price"
-            onChange={handleChange}
-            value={product.price}
+            {...register("price", {
+              required: "Price cannot be empty",
+              pattern: {
+                value: /^[0-9]*$/,
+                message: "Price must be a valid number",
+              },
+              valueAsNumber: true,
+            })}
             className={`block w-full rounded-md border ${
               errors.price ? "border-red-500" : "border-gray-300"
             } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
           />
           {errors.price && (
-            <p className="mt-2 text-sm text-red-500">{errors.price}</p>
+            <p className="mt-2 text-sm text-red-500">{errors.price.message}</p>
           )}
         </div>
       </div>
