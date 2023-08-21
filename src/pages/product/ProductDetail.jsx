@@ -1,11 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
+import { useState } from "react";
 import api from "../../service/api";
+import EditItemModal from "../../components/product/EditItemModal";
 
 function ProductDetail() {
+  const [showEditModal, setShowEditModal] = useState(false);
   const { id } = useParams();
 
-  const { data: product, isLoading } = useQuery(["product", id], () => {
+  const {
+    data: product,
+    isLoading,
+    refetch,
+  } = useQuery(["product", id], () => {
     return api.get(`/product/${id}`).then((res) => res.data);
   });
 
@@ -19,12 +26,28 @@ function ProductDetail() {
 
   return (
     <div>
+      <EditItemModal
+        showModal={showEditModal}
+        setShowModal={setShowEditModal}
+        onSuccess={() => {
+          refetch();
+        }}
+        selectedProduct={product}
+      />
       <h2>Product Detail</h2>
       <p>ID: {product.id}</p>
       <p>Name: {product.name}</p>
       <p>Price: {product.price}</p>
       <p>Description: {product.description}</p>
       <p>Type: {product.type}</p>
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={() => {
+          setShowEditModal(true);
+        }}
+      >
+        Edit
+      </button>
     </div>
   );
 }
