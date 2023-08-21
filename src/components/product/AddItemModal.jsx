@@ -2,13 +2,14 @@ import { FaCircleNotch } from "react-icons/fa";
 import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, Transition } from "@headlessui/react";
 import { serialize } from "object-to-formdata";
 import { toast } from "sonner";
 import api from "../../service/api.js";
 
 export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
+  const queryClient = useQueryClient();
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -63,11 +64,14 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
     }
   };
   //!SECTION - End of drag and drop image handler
-
   // NOTE - Mutation to add new product
   const mutation = useMutation({
     mutationFn: (productData) => api.post(`/product`, productData),
     onSuccess: (data) => {
+      queryClient.setQueryData(["products"], (oldData) => ({
+        ...oldData,
+        data: [...oldData.data, data.data],
+      }));
       onSuccess();
       setShowModal(false);
       toast.success(`${data.data.name} has been created!`);
