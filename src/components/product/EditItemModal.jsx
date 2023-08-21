@@ -1,7 +1,8 @@
 import { FaCircleNotch } from "react-icons/fa";
 import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
-import { Fragment, useRef, useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Dialog, Transition } from "@headlessui/react";
 import { serialize } from "object-to-formdata";
 import { toast } from "sonner";
@@ -13,8 +14,6 @@ export default function EditItemModal({
   onSuccess,
   selectedProduct,
 }) {
-  const cancelButtonRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -65,38 +64,30 @@ export default function EditItemModal({
     }
   };
   //!SECTION - End of drag and drop image handler
+
+  // NOTE - Mutation to edit product
+  const mutation = useMutation({
+    mutationFn: (productData) =>
+      api.put(`/product/${selectedProduct.id}`, productData),
+    onSuccess: (data) => {
+      onSuccess();
+      setShowModal(false);
+      toast.success("Successfully updated product");
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error(`Failed to update product | ${err}`);
+    },
+  });
   //NOTE - Form submit handler
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
     const productData = serialize(product);
-    toast.promise(api.put(`/product/${selectedProduct.id}`, productData), {
-      loading: "Loading..",
-      success: (data) => {
-        onSuccess();
-        setIsLoading(false);
-        handleCloseForm();
-        return "Successfully updated product";
-      },
-      error: (err) => {
-        console.log(err);
-        setIsLoading(false);
-        return `Failed to update product | ${err}`;
-      },
-    });
-  };
-  // NOTE - Close form handler
-  const handleCloseForm = () => {
-    setShowModal(false);
+    mutation.mutate(productData);
   };
   return (
     <Transition.Root show={showModal} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-10"
-        initialFocus={cancelButtonRef}
-        onClose={handleCloseForm}
-      >
+      <Dialog as="div" className="relative z-10" onClose={() => setShowModal(false)}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -319,18 +310,18 @@ export default function EditItemModal({
                   <div className="pt-5">
                     <div className="flex justify-end">
                       <button
-                        onClick={handleCloseForm}
+                        onClick={() => setShowModal(false)}
                         type="button"
                         className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
                         Cancel
                       </button>
                       <button
-                        disabled={isLoading}
+                        disabled={mutation.isLoading}
                         type="submit"
                         className="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        {isLoading ? (
+                        {mutation.isLoading ? (
                           <FaCircleNotch className="animate-spin" />
                         ) : (
                           <span>Update</span>
