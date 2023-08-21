@@ -2,7 +2,7 @@ import { FaCircleNotch } from "react-icons/fa";
 import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
 import { Fragment, useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, Transition } from "@headlessui/react";
 import { serialize } from "object-to-formdata";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ export default function EditItemModal({
   onSuccess,
   selectedProduct,
 }) {
+  const queryClient = useQueryClient();
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -70,6 +71,14 @@ export default function EditItemModal({
     mutationFn: (productData) =>
       api.put(`/product/${selectedProduct.id}`, productData),
     onSuccess: (data) => {
+      queryClient.setQueryData(["products"], (oldData) => {
+        return {
+          ...oldData,
+          data: oldData.data.map((product) =>
+            product.id === data.data.id ? data.data : product
+          ),
+        };
+      });
       onSuccess();
       setShowModal(false);
       toast.success("Successfully updated product");
@@ -87,7 +96,11 @@ export default function EditItemModal({
   };
   return (
     <Transition.Root show={showModal} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={() => setShowModal(false)}>
+      <Dialog
+        as="div"
+        className="relative z-10"
+        onClose={() => setShowModal(false)}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"

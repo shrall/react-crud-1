@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import api from "../../service/api";
 import EditItemModal from "../../components/product/EditItemModal";
 
 function ProductDetail() {
+  const queryClient = useQueryClient();
   const [showEditModal, setShowEditModal] = useState(false);
   const { id } = useParams();
 
@@ -12,8 +13,14 @@ function ProductDetail() {
     data: product,
     isLoading,
     refetch,
-  } = useQuery(["product", id], () => {
-    return api.get(`/product/${id}`).then((res) => res.data);
+  } = useQuery({
+    queryKey: ["product", id],
+    queryFn: () => api.get(`/product/${id}`).then((res) => res.data),
+    initialData: () => {
+      return queryClient
+        .getQueryData(["products"])
+        ?.data.find((product) => product.id === id);
+    },
   });
 
   if (isLoading) {
