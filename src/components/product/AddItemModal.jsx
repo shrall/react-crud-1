@@ -1,14 +1,14 @@
 import { FaCircleNotch } from "react-icons/fa";
 import { RiImageAddFill } from "react-icons/ri";
 import { RiImageEditFill } from "react-icons/ri";
-import { Fragment, useRef, useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Dialog, Transition } from "@headlessui/react";
 import { serialize } from "object-to-formdata";
 import { toast } from "sonner";
 import api from "../../service/api.js";
 
 export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
-  const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -16,6 +16,16 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
     price: "",
     image: "",
   });
+  // NOTE - Reset the form when the modal is closed
+  useEffect(() => {
+    setProduct({
+      name: "",
+      description: "",
+      type: "Clothing",
+      price: "",
+      image: "",
+    });
+  }, [showModal]);
   // NOTE - Handle form input change based on input name then its value
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,44 +63,33 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
     }
   };
   //!SECTION - End of drag and drop image handler
+
+  // NOTE - Mutation to add new product
+  const mutation = useMutation({
+    mutationFn: (productData) => api.post(`/product`, productData),
+    onSuccess: (data) => {
+      onSuccess();
+      setShowModal(false);
+      toast.success(`${data.data.name} has been created!`);
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error(`Failed to add new product | ${err}`);
+    },
+  });
   //NOTE - Form submit handler
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
     const productData = serialize(product);
-    toast.promise(api.post(`/product`, productData), {
-      loading: "Loading...",
-      success: (data) => {
-        onSuccess();
-        setIsLoading(false);
-        handleCloseModal();
-        return `${data.data.name} has been created!`;
-      },
-      error: (err) => {
-        console.log(err);
-        setIsLoading(false);
-        return `Failed to add new product | ${err}`;
-      },
-    });
-  };
-  //NOTE - Reset product data if form is closed
-  const resetProductData = () => {
-    setProduct({
-      name: "",
-      description: "",
-      type: "Clothing",
-      price: "",
-      image: "",
-    });
-  };
-  // NOTE - Close form handler
-  const handleCloseModal = () => {
-    resetProductData();
-    setShowModal(false);
+    mutation.mutate(productData);
   };
   return (
     <Transition.Root show={showModal} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={handleCloseModal}>
+      <Dialog
+        as="div"
+        className="relative z-10"
+        onClose={() => setShowModal(false)}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -305,18 +304,18 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
                   <div className="pt-5">
                     <div className="flex justify-end">
                       <button
-                        onClick={handleCloseModal}
+                        onClick={() => setShowModal(false)}
                         type="button"
                         className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
                         Cancel
                       </button>
                       <button
-                        disabled={isLoading}
+                        disabled={mutation.isLoading}
                         type="submit"
                         className="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        {isLoading ? (
+                        {mutation.isLoading ? (
                           <FaCircleNotch className="animate-spin" />
                         ) : (
                           <span>Save</span>
