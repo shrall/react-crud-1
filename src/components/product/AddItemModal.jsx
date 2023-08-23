@@ -65,27 +65,34 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
   };
   //!SECTION - End of drag and drop image handler
   // NOTE - Mutation to add new product
-  const mutation = useMutation({
-    mutationFn: (productData) => api.post(`/product`, productData),
+  const { mutateAsync, isLoading } = useMutation({
+    mutationFn: (product) => {
+      const formData = serialize(product);
+      return api.post(`/product`, formData);
+    },
     onSuccess: (data) => {
+      // NOTE - Optimistic update to the "products" query
       queryClient.setQueryData(["products"], (oldData) => ({
         ...oldData,
         data: [...oldData.data, data.data],
       }));
-      onSuccess();
-      setShowModal(false);
-      toast.success(`${data.data.name} has been created!`);
-    },
-    onError: (err) => {
-      console.error(err);
-      toast.error(`Failed to add new product | ${err}`);
     },
   });
   //NOTE - Form submit handler
   const handleSubmit = (e) => {
     e.preventDefault();
-    const productData = serialize(product);
-    mutation.mutate(productData);
+    toast.promise(mutateAsync(product), {
+      loading: "Loading..",
+      success: (data) => {
+        onSuccess();
+        setShowModal(false);
+        return `Successfully added new product | ${data.data.name}`;
+      },
+      error: (err) => {
+        console.log(err);
+        return `Failed to add new product | ${err}`;
+      },
+    });
   };
   return (
     <Transition.Root show={showModal} as={Fragment}>
@@ -315,11 +322,11 @@ export default function AddItemModal({ showModal, setShowModal, onSuccess }) {
                         Cancel
                       </button>
                       <button
-                        disabled={mutation.isLoading}
+                        disabled={isLoading}
                         type="submit"
                         className="ml-3 inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        {mutation.isLoading ? (
+                        {isLoading ? (
                           <FaCircleNotch className="animate-spin" />
                         ) : (
                           <span>Save</span>
