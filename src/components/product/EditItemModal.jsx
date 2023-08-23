@@ -6,6 +6,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, Transition } from "@headlessui/react";
 import { serialize } from "object-to-formdata";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { REGEX } from "../../constant/regex";
 import api from "../../service/api.js";
 
 export default function EditItemModal({
@@ -15,34 +17,22 @@ export default function EditItemModal({
   selectedProduct,
 }) {
   const queryClient = useQueryClient();
-  const [product, setProduct] = useState({
-    name: "",
-    description: "",
-    type: "Clothing",
-    price: "",
-    image: "",
-  });
-  // NOTE - Set product data to selectedProduct for editing
+  const {
+    register,
+    watch,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
   useEffect(() => {
     if (selectedProduct) {
-      setProduct(selectedProduct);
+      setValue("name", selectedProduct.name);
+      setValue("description", selectedProduct.description);
+      setValue("type", selectedProduct.type);
+      setValue("price", selectedProduct.price);
+      setValue("image", selectedProduct.image);
     }
   }, [selectedProduct]);
-  // NOTE - Handle form input change based on input name then its value
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProduct((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-  // NOTE - Separate image change handler because it's a file
-  const handleImageChange = (e) => {
-    setProduct((prevData) => ({
-      ...prevData,
-      image: e.target.files[0],
-    }));
-  };
   //SECTION - Drag and drop image handler
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -58,10 +48,7 @@ export default function EditItemModal({
     setIsDraggingOver(false);
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-      setProduct((prevData) => ({
-        ...prevData,
-        image: droppedFile,
-      }));
+      setValue("image", e.dataTransfer.files);
     }
   };
   //!SECTION - End of drag and drop image handler
@@ -85,8 +72,8 @@ export default function EditItemModal({
     },
   });
   //NOTE - Form submit handler
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const onSubmit = (product) => {
+    product.image = product.image?.[0] || product.image;
     toast.promise(mutateAsync(product), {
       loading: "Updating product...",
       success: (data) => {
@@ -132,7 +119,7 @@ export default function EditItemModal({
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <form
-                  onSubmit={handleSubmit}
+                  onSubmit={handleSubmit(onSubmit)}
                   className="space-y-8 divide-y divide-gray-200"
                 >
                   <div className="space-y-8 divide-y divide-gray-200">
@@ -157,14 +144,22 @@ export default function EditItemModal({
                           <div className="mt-1">
                             <input
                               type="text"
-                              name="name"
                               id="name"
                               autoComplete="name"
-                              required
-                              onChange={handleChange}
-                              value={product.name}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              {...register("name", {
+                                required: "Name cannot be empty",
+                              })}
+                              className={`block w-full rounded-md border ${
+                                errors.name
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                             />
+                            {errors.name && (
+                              <p className="mt-2 text-sm text-red-500">
+                                {errors.name.message}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="sm:col-span-6">
@@ -177,13 +172,21 @@ export default function EditItemModal({
                           <div className="mt-1">
                             <textarea
                               id="description"
-                              name="description"
                               rows={3}
-                              required
-                              value={product.description}
-                              onChange={handleChange}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              {...register("description", {
+                                required: "Description cannot be empty",
+                              })}
+                              className={`block w-full rounded-md border ${
+                                errors.description
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                             />
+                            {errors.description && (
+                              <p className="mt-2 text-sm text-red-500">
+                                {errors.description.message}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="sm:col-span-3">
@@ -196,12 +199,15 @@ export default function EditItemModal({
                           <div className="mt-1">
                             <select
                               id="type"
-                              name="type"
                               autoComplete="type"
-                              required
-                              onChange={handleChange}
-                              value={product.type}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              {...register("type", {
+                                required: "Type cannot be empty",
+                              })}
+                              className={`block w-full rounded-md border ${
+                                errors.type
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                             >
                               <option value="Clothing">Clothing</option>
                               <option value="Electronics">Electronics</option>
@@ -209,6 +215,11 @@ export default function EditItemModal({
                               <option value="Toys">Toys</option>
                               <option value="Other">Other</option>
                             </select>
+                            {errors.type && (
+                              <p className="mt-2 text-sm text-red-500">
+                                {errors.type.message}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="sm:col-span-3">
@@ -220,15 +231,28 @@ export default function EditItemModal({
                           </label>
                           <div className="mt-1">
                             <input
-                              type="text"
-                              name="price"
+                              type="number"
                               id="price"
                               autoComplete="price"
-                              required
-                              onChange={handleChange}
-                              value={product.price}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              {...register("price", {
+                                required: "Price cannot be empty",
+                                pattern: {
+                                  value: REGEX.NUMBER,
+                                  message: "Price must be a valid number",
+                                },
+                                valueAsNumber: true,
+                              })}
+                              className={`block w-full rounded-md border ${
+                                errors.price
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
                             />
+                            {errors.price && (
+                              <p className="mt-2 text-sm text-red-500">
+                                {errors.price.message}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="sm:col-span-6">
@@ -238,24 +262,30 @@ export default function EditItemModal({
                           >
                             Product image
                           </label>
-                          {product.image ? (
+                          {watch("image") ? (
                             <div className="h-56 overflow-hidden rounded-md bg-gray-200 group-hover:opacity-75 lg:h-72 xl:h-80 relative group">
-                              {selectedProduct && product.image.data ? (
+                              {selectedProduct && watch("image").data ? (
                                 <img
-                                  src={`data:${product.image.contentType};base64,${product.image.data}`}
-                                  alt={`image of ${product.name}`}
+                                  src={`data:${
+                                    watch("image").contentType
+                                  };base64,${watch("image").data}`}
+                                  alt={`image of ${watch("name")}`}
                                   className="h-full object-cover object-center mx-auto"
                                 />
                               ) : (
                                 <img
-                                  src={URL.createObjectURL(product.image)}
-                                  alt={`image of ${product.name}`}
+                                  src={URL.createObjectURL(watch("image")?.[0])}
+                                  alt={`image of ${watch("name")}`}
                                   className="h-full object-cover object-center mx-auto"
                                 />
                               )}
                               <div className="absolute bg-black opacity-0 group-hover:opacity-80 w-full h-full top-0 flex items-center justify-center transition-all cursor-pointer p-4">
                                 <div
-                                  className={`mt-1 w-full h-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pt-5 pb-6 opacity-0 group-hover:opacity-100 ${
+                                  className={`mt-1 w-full h-full flex items-center justify-center rounded-md border-2 border-dashed ${
+                                    errors.image
+                                      ? "border-red-500"
+                                      : "border-gray-300"
+                                  } px-6 pt-5 pb-6 opacity-0 group-hover:opacity-100 ${
                                     isDraggingOver ? "bg-gray-100" : ""
                                   }`}
                                   onDragOver={handleDragOver}
@@ -266,16 +296,30 @@ export default function EditItemModal({
                                     <RiImageEditFill className="mx-auto h-12 w-12 text-gray-400" />
                                     <div className="flex text-sm text-gray-600">
                                       <label
-                                        htmlFor="file-upload"
+                                        htmlFor="image"
                                         className="relative cursor-pointer rounded-md font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
                                       >
                                         <span>Upload a file</span>
                                         <input
-                                          id="file-upload"
-                                          name="file-upload"
+                                          id="image"
                                           type="file"
                                           className="sr-only"
-                                          onChange={handleImageChange}
+                                          {...register("image", {
+                                            validate: (value) => {
+                                              if (!value?.[0]) return true;
+                                              if (
+                                                value[0].type !== "image/png" &&
+                                                value[0].type !== "image/jpg" &&
+                                                value[0].type !== "image/jpeg"
+                                              ) {
+                                                return "Image must be a valid image file";
+                                              }
+                                              if (value[0].size > 10000000) {
+                                                return "Image must be less than 10MB";
+                                              }
+                                              return true;
+                                            },
+                                          })}
                                         />
                                       </label>
                                       <p className="pl-1">
@@ -285,6 +329,11 @@ export default function EditItemModal({
                                     <p className="text-xs text-gray-500">
                                       PNG, JPG, GIF up to 10MB
                                     </p>
+                                    {errors.image && (
+                                      <p className="mt-2 text-sm text-red-500">
+                                        {errors.image.message}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -302,16 +351,30 @@ export default function EditItemModal({
                                 <RiImageAddFill className="mx-auto h-12 w-12 text-gray-400" />
                                 <div className="flex text-sm text-gray-600">
                                   <label
-                                    htmlFor="file-upload"
+                                    htmlFor="image"
                                     className="relative cursor-pointer rounded-md bg-white font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
                                   >
                                     <span>Upload a file</span>
                                     <input
-                                      id="file-upload"
-                                      name="file-upload"
+                                      id="image"
                                       type="file"
                                       className="sr-only"
-                                      onChange={handleImageChange}
+                                      {...register("image", {
+                                        validate: (value) => {
+                                          if (!value?.[0]) return true;
+                                          if (
+                                            value[0].type !== "image/png" &&
+                                            value[0].type !== "image/jpg" &&
+                                            value[0].type !== "image/jpeg"
+                                          ) {
+                                            return "Image must be a valid image file";
+                                          }
+                                          if (value[0].size > 10000000) {
+                                            return "Image must be less than 10MB";
+                                          }
+                                          return true;
+                                        },
+                                      })}
                                     />
                                   </label>
                                   <p className="pl-1">or drag and drop</p>
@@ -319,6 +382,11 @@ export default function EditItemModal({
                                 <p className="text-xs text-gray-500">
                                   PNG, JPG, GIF up to 10MB
                                 </p>
+                                {errors.image && (
+                                  <p className="mt-2 text-sm text-red-500">
+                                    {errors.image.message}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           )}
