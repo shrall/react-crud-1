@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { REGEX } from "../constant/regex";
 
 function TestValidation() {
   const {
@@ -54,7 +55,7 @@ function TestValidation() {
             {...register("price", {
               required: "Price cannot be empty",
               pattern: {
-                value: /^[0-9]*$/,
+                value: REGEX.NUMBER,
                 message: "Price must be a valid number",
               },
               valueAsNumber: true,
