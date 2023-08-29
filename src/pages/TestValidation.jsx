@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { REGEX } from "../constant/regex";
+import clsx from "clsx";
 
 function TestValidation() {
   const {
@@ -31,9 +32,10 @@ function TestValidation() {
             id="name"
             autoComplete="name"
             {...register("name", { required: "Name cannot be empty" })}
-            className={`block w-full rounded-md border ${
+            className={clsx(
+              "block w-full rounded-md border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
               errors.name ? "border-red-500" : "border-gray-300"
-            } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+            )}
           />
           {errors.name && (
             <p className="mt-2 text-sm text-red-500">{errors.name.message}</p>
@@ -60,9 +62,10 @@ function TestValidation() {
               },
               valueAsNumber: true,
             })}
-            className={`block w-full rounded-md border ${
+            className={clsx(
+              "block w-full rounded-md border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
               errors.price ? "border-red-500" : "border-gray-300"
-            } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+            )}
           />
           {errors.price && (
             <p className="mt-2 text-sm text-red-500">{errors.price.message}</p>

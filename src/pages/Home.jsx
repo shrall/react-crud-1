@@ -57,16 +57,12 @@ export default function Home() {
       <AddItemModal
         showModal={showAddModal}
         setShowModal={setShowAddModal}
-        onSuccess={() => {
-          refetch();
-        }}
+        onSuccess={refetch}
       />
       <EditItemModal
         showModal={showEditModal}
         setShowModal={setShowEditModal}
-        onSuccess={() => {
-          refetch();
-        }}
+        onSuccess={refetch}
         selectedProduct={selectedProduct}
       />
       <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
