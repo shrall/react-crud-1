@@ -36,9 +36,7 @@ function ProductDetail() {
       <EditItemModal
         showModal={showEditModal}
         setShowModal={setShowEditModal}
-        onSuccess={() => {
-          refetch();
-        }}
+        onSuccess={refetch}
         selectedProduct={product}
       />
       <h2>Product Detail</h2>

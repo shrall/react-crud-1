@@ -8,6 +8,7 @@ import { serialize } from "object-to-formdata";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { REGEX } from "../../constant/regex";
+import clsx from "clsx";
 import api from "../../service/api.js";
 
 export default function EditItemModal({
@@ -54,7 +55,7 @@ export default function EditItemModal({
   //!SECTION - End of drag and drop image handler
 
   // NOTE - Mutation to edit product
-  const { mutateAsync, isLoading } = useMutation({
+  const { mutateAsync: updateItemMutation, isLoading } = useMutation({
     mutationFn: (product) => {
       const formData = serialize(product);
       return api.put(`/product/${selectedProduct.id}`, formData);
@@ -74,7 +75,7 @@ export default function EditItemModal({
   //NOTE - Form submit handler
   const onSubmit = (product) => {
     product.image = product.image?.[0] || product.image;
-    toast.promise(mutateAsync(product), {
+    toast.promise(updateItemMutation(product), {
       loading: "Updating product...",
       success: (data) => {
         onSuccess(data);
@@ -149,11 +150,12 @@ export default function EditItemModal({
                               {...register("name", {
                                 required: "Name cannot be empty",
                               })}
-                              className={`block w-full rounded-md border ${
+                              className={clsx(
+                                "block w-full rounded-md border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
                                 errors.name
                                   ? "border-red-500"
                                   : "border-gray-300"
-                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+                              )}
                             />
                             {errors.name && (
                               <p className="mt-2 text-sm text-red-500">
@@ -176,11 +178,12 @@ export default function EditItemModal({
                               {...register("description", {
                                 required: "Description cannot be empty",
                               })}
-                              className={`block w-full rounded-md border ${
-                                errors.description
+                              className={clsx(
+                                "block w-full rounded-md border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                                errors.name
                                   ? "border-red-500"
                                   : "border-gray-300"
-                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+                              )}
                             />
                             {errors.description && (
                               <p className="mt-2 text-sm text-red-500">
@@ -203,11 +206,12 @@ export default function EditItemModal({
                               {...register("type", {
                                 required: "Type cannot be empty",
                               })}
-                              className={`block w-full rounded-md border ${
-                                errors.type
+                              className={clsx(
+                                "block w-full rounded-md border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                                errors.name
                                   ? "border-red-500"
                                   : "border-gray-300"
-                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+                              )}
                             >
                               <option value="Clothing">Clothing</option>
                               <option value="Electronics">Electronics</option>
@@ -242,11 +246,12 @@ export default function EditItemModal({
                                 },
                                 valueAsNumber: true,
                               })}
-                              className={`block w-full rounded-md border ${
-                                errors.price
+                              className={clsx(
+                                "block w-full rounded-md border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+                                errors.name
                                   ? "border-red-500"
                                   : "border-gray-300"
-                              } shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm`}
+                              )}
                             />
                             {errors.price && (
                               <p className="mt-2 text-sm text-red-500">
@@ -281,13 +286,13 @@ export default function EditItemModal({
                               )}
                               <div className="absolute bg-black opacity-0 group-hover:opacity-80 w-full h-full top-0 flex items-center justify-center transition-all cursor-pointer p-4">
                                 <div
-                                  className={`mt-1 w-full h-full flex items-center justify-center rounded-md border-2 border-dashed ${
+                                  className={clsx(
+                                    "mt-1 w-full h-full flex items-center justify-center rounded-md border-2 border-dashed px-6 pt-5 pb-6 opacity-0 group-hover:opacity-100",
                                     errors.image
                                       ? "border-red-500"
-                                      : "border-gray-300"
-                                  } px-6 pt-5 pb-6 opacity-0 group-hover:opacity-100 ${
-                                    isDraggingOver ? "bg-gray-100" : ""
-                                  }`}
+                                      : "border-gray-300",
+                                    isDraggingOver ?? "bg-gray-100"
+                                  )}
                                   onDragOver={handleDragOver}
                                   onDragLeave={handleDragLeave}
                                   onDrop={handleDrop}
@@ -340,9 +345,10 @@ export default function EditItemModal({
                             </div>
                           ) : (
                             <div
-                              className={`mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pt-5 pb-6 ${
-                                isDraggingOver ? "bg-gray-100" : ""
-                              }`}
+                              className={clsx(
+                                "mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pt-5 pb-6",
+                                isDraggingOver ?? "bg-gray-100"
+                              )}
                               onDragOver={handleDragOver}
                               onDragLeave={handleDragLeave}
                               onDrop={handleDrop}
